@@ -1,11 +1,9 @@
 /* eslint-disable indent */
-const MOGODB_URI = 'mongodb+srv://tuanvdtd:qgjxQqJLUbKz5jvz@cluster0-tuandt.vg1kdkv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0-TuanDT'
-const DATABASE_NAME = 'express-api-database'
 
 import { MongoClient, ServerApiVersion } from 'mongodb'
-
+import { env } from './environment'
 let dbInstance = null
-const mongoClient = new MongoClient(MOGODB_URI, {
+const mongoClient = new MongoClient(env.MONGODB_URI, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
@@ -15,7 +13,7 @@ const mongoClient = new MongoClient(MOGODB_URI, {
 
 export const DB_CONNECT = async () => {
     await mongoClient.connect();
-    dbInstance = mongoClient.db(DATABASE_NAME)
+    dbInstance = mongoClient.db(env.DATABASE_NAME)
 }
 
 export const DB_GET = () => {

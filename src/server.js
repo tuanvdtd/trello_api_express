@@ -4,6 +4,7 @@
 import express from 'express'
 import { DB_CONNECT, DB_GET, DB_CLOSE } from './config/mongodb'
 import exitHook from 'async-exit-hook'
+import { env } from './config/environment'
 
 const START_SERVER = () => {
   const app = express()
@@ -18,11 +19,11 @@ const START_SERVER = () => {
 
   app.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
-    console.log(`Hello Tuan, I am running at http://${hostname}:${port}/`)
+    console.log(`Hello ${env.AUTHOR}, I am running at http://${env.HOSTNAME}:${env.PORT}/`)
   })
 
   exitHook(async () => {
-    console.log('Closing database connection...')
+    console.log('Shutting down database...')
     DB_CLOSE()
     console.log('Database connection closed')
   })
