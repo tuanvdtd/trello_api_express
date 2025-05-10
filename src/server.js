@@ -1,23 +1,18 @@
 /* eslint-disable no-console */
 /* eslint-disable indent */
-
 import express from 'express'
 import { DB_CONNECT, DB_GET, DB_CLOSE } from './config/mongodb'
 import exitHook from 'async-exit-hook'
 import { env } from './config/environment'
+import { Router_V1 } from "./routes/v1"
 
 const START_SERVER = () => {
   const app = express()
   // process.stdin.resume()
-  const hostname = 'localhost'
-  const port = 8017
 
-  app.get('/', async (req, res) => {
-    console.log(await DB_GET().listCollections().toArray())
-    res.end('<h1>Hello World!</h1><hr>')
-  })
+  app.use('/v1', Router_V1)
 
-  app.listen(port, hostname, () => {
+  app.listen(env.PORT, env.HOSTNAME, () => {
     // eslint-disable-next-line no-console
     console.log(`Hello ${env.AUTHOR}, I am running at http://${env.HOSTNAME}:${env.PORT}/`)
   })
