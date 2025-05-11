@@ -6,4 +6,5 @@ export const env = {
     PORT: process.env.APP_PORT,
     HOSTNAME: process.env.APP_HOST,
     AUTHOR: process.env.AUTHOR,
+    BUILD_MODE: process.env.BUILD_MODE,
 }
