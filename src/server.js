@@ -9,7 +9,7 @@ import { Router_V1 } from "./routes/v1"
 const START_SERVER = () => {
   const app = express()
   // process.stdin.resume()
-
+  app.use(express.json())
   app.use('/v1', Router_V1)
 
   app.listen(env.PORT, env.HOSTNAME, () => {
