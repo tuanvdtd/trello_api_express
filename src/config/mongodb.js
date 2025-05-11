@@ -3,6 +3,7 @@
 import { MongoClient, ServerApiVersion } from 'mongodb'
 import { env } from './environment'
 let dbInstance = null
+
 const mongoClient = new MongoClient(env.MONGODB_URI, {
     serverApi: {
         version: ServerApiVersion.v1,

@@ -17,11 +17,11 @@ export const slugify = (val) => {
 /**
  * Example:
  */
-const originalStringTest = 'TrungQuanDev Một Lập Trình Viên'
-const slug = slugify(originalStringTest)
+// const originalStringTest = 'Một Lập Trình Viên'
+// const slug = slugify(originalStringTest)
 
-console.log('originalStringTest:', originalStringTest)
-console.log('slug:', slug)
+// console.log('originalStringTest:', originalStringTest)
+// console.log('slug:', slug)
 /**
  * Results:
  * 
