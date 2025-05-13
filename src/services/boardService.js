@@ -1,5 +1,6 @@
 import { slugify } from "~/utils/fomatter";
 import { BoardModel } from "~/models/boardModel"
+
 const createNew = async (resBody) => {
     try {
         const newBoard = {
@@ -14,7 +15,19 @@ const createNew = async (resBody) => {
         throw new Error(error);
     }
 }
+const getDetail = async (id) => {
+    try {
+        const board = await BoardModel.getDetail(id);
+        if (!board) {
+            throw new Error("Board not found");
+        }
+        return board;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
 
 export const boardService = {
-    createNew
+    createNew,
+    getDetail
 }
