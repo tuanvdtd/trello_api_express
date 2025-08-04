@@ -4,14 +4,14 @@ import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 
 const createNew = async (resBody) => {
-  try {
-    const newBoard = {
-      ...resBody,
-      slug: slugify(resBody.title)
-    }
-    const createNew = await BoardModel.createNew(newBoard)
-    const result = await BoardModel.getBoardById(createNew.insertedId)
-    return result
+    try {
+        const newBoard = {
+            ...resBody,
+            slug: slugify(resBody.title),
+        }
+        const createNew = await BoardModel.createNew(newBoard);
+        const result = await BoardModel.getBoardById(createNew.insertedId);
+        return result;
 
   } catch (error) {
     throw new Error(error)
@@ -31,6 +31,5 @@ const getDetails = async (boardId) => {
 }
 
 export const boardService = {
-  createNew,
-  getDetails
+    createNew
 }

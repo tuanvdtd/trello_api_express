@@ -2,6 +2,7 @@ import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -30,8 +31,32 @@ const createNew = async (data) => {
 }
 
 const getBoardById = async (id) => {
+    try {
+        const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+        return board;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
+const getDetail = async (id) => {
+    try {
+        const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+        return board;
+    } catch (error) {
+        throw new Error(error);
+    }
   try {
     const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+    return board
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const getDetails = async (boardId) => {
+  try {
+    const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(boardId) })
     return board
   } catch (error) {
     throw new Error(error)
@@ -53,6 +78,6 @@ export const BoardModel = {
   BOARD_COLLECTION_SCHEMA,
   createNew,
   getBoardById,
-  getDetails
+  getDetail
 }
 
