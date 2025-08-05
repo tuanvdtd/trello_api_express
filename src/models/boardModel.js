@@ -2,6 +2,9 @@ import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
+import { BOARD_TYPE } from '~/utils/constants'
+import { columnModel } from './columnModel'
+import { cardModel } from './cardModel'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -11,7 +14,8 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   columnsOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
-  _destroy: Joi.boolean().default(false)
+  _destroy: Joi.boolean().default(false),
+  type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
 })
 
 const validBeforeCreate = async (data) => {
@@ -40,8 +44,26 @@ const getBoardById = async (id) => {
 
 const getDetails = async (boardId) => {
   try {
-    const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(boardId) })
-    return board
+    // const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(boardId) })
+    const board = await DB_GET().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match: {
+        _id: new ObjectId(boardId),
+        _destroy: false
+      } },
+      { $lookup: {
+        from: columnModel.COLUMN_COLLECTION_NAME,
+        localField: '_id',
+        foreignField: 'boardId',
+        as: 'columns'
+      } },
+      { $lookup: {
+        from: cardModel.CARD_COLLECTION_NAME,
+        localField: '_id',
+        foreignField: 'boardId',
+        as: 'cards'
+      } }
+    ]).toArray()
+    return board[0] || null
   } catch (error) {
     throw new Error(error)
   }

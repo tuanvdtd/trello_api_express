@@ -23,18 +23,6 @@ const getDetails = async (req, res, next) => {
   }
 }
 
-const getDetail = async (req, res, next) => {
-    try {
-
-        const board = await boardService.getDetail(req.params.id);
-        res.status(StatusCodes.OK).json(board)
-
-    }
-    catch (error) {
-        next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message));
-    }
-}
-
 export const boardController = {
   createNew,
   getDetails
