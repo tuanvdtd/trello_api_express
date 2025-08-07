@@ -47,8 +47,32 @@ const update = async (req, res, next) => {
   }
 }
 
+const moveCardToDiffColumn = async (req, res, next) => {
+  const boardSchema = Joi.object({
+    cardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    preColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    nextColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    preCardOrderIds: Joi.array().required().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)),
+    nextCardOrderIds: Joi.array().required().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+  })
+  try {
+    await boardSchema.validateAsync(req.body, { abortEarly: false })
+    next()
+  }
+  catch (error) {
+    // next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, (error.massage)));
+    // res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+    //     status: `${StatusCodes.UNPROCESSABLE_ENTITY}`,
+    //     message: error.message,
+    // });
+    // next(error)
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+  }
+}
+
 export const boardValidation = {
   createNew,
-  update
+  update,
+  moveCardToDiffColumn
 }
 

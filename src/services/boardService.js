@@ -3,6 +3,8 @@ import { BoardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
+import { columnModel } from '~/models/columnModel'
+import { cardModel } from '~/models/cardModel'
 
 const createNew = async (resBody) => {
   try {
@@ -50,8 +52,33 @@ const update = async (boardId, resBody) => {
   }
 }
 
+const moveCardToDiffColumn = async (resBody) => {
+  try {
+    //Xóa card khỏi column cũ
+    await columnModel.update(resBody.preColumnId, {
+      cardOrderIds: resBody.preCardOrderIds,
+      updatedAt: Date.now()
+    })
+    //Thêm card vào column mới
+    await columnModel.update(resBody.nextColumnId, {
+      cardOrderIds: resBody.nextCardOrderIds,
+      updatedAt: Date.now()
+    })
+    //Thay đổi columnId của card sau khi move
+    await cardModel.update(resBody.cardId, {
+      columnId: resBody.nextColumnId
+    })
+    return {
+      message: 'Card moved successfully'
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardService = {
   createNew,
   getDetails,
-  update
+  update,
+  moveCardToDiffColumn
 }
