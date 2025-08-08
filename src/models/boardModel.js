@@ -71,11 +71,26 @@ const getDetails = async (boardId) => {
   }
 }
 
+// Thêm columnId vào mảng columnOrderIds của bảng board
 const pushColumnIds = async (column) => {
   try {
     const updateResult = await DB_GET().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(column.boardId) },
       { $push: { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+// Xóa columnId khỏi mảng columnOrderIds của bảng board
+const pullColumnIds = async (column) => {
+  try {
+    const updateResult = await DB_GET().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(column.boardId) },
+      { $pull: { columnOrderIds: new ObjectId(column._id) } },
       { returnDocument: 'after' }
     )
     return updateResult
@@ -111,6 +126,7 @@ export const BoardModel = {
   getBoardById,
   getDetails,
   pushColumnIds,
-  update
+  update,
+  pullColumnIds
 }
 
