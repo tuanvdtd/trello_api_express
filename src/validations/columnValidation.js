@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
@@ -9,7 +9,7 @@ const createNew = async (req, res, next) => {
     title: Joi.string().required().min(3).max(50).trim().strict()
   })
   try {
-    await columnSchema.validateAsync(req.body, { abortEarly: false });
+    await columnSchema.validateAsync(req.body, { abortEarly: false })
     next()
   }
   catch (error) {
@@ -19,7 +19,7 @@ const createNew = async (req, res, next) => {
     //     message: error.message,
     // });
     // next(error)
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
 }
 
