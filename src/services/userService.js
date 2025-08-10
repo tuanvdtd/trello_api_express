@@ -5,6 +5,8 @@ import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/fomatter'
+import { ResendProvider } from '~/providers/ResendProvider'
+import { WEBSITE_DOMAIN } from '~/utils/constants'
 
 const createNew = async (userData) => {
   // Logic to create a new user
@@ -30,6 +32,17 @@ const createNew = async (userData) => {
     const result = await userModel.findOneById(createdUser.insertedId)
 
     // Gửi email cho người dùng xác thực tài khoản
+    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${result.email}&token=${result.verifyToken}`
+    const to = result.email
+    const subject = 'Welcome to Our Service!'
+    const html = `
+    <h1>Welcome!</h1>
+    <h2>Thank you for joining us.</h2>
+    <h3>Here is your verification link:</h3>
+    <h3>${verificationLink}</h3>
+    <h3>Sincerely!</h3>
+    `
+    await ResendProvider.sendEmail({ to, subject, html })
 
     // return trả về dữ liệu người dùng đã tạo
     return pickUser(result)
