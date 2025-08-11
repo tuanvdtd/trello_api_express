@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
@@ -10,7 +10,7 @@ const createNew = async (req, res, next) => {
     columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   })
   try {
-    await cardSchema.validateAsync(req.body, { abortEarly: false });
+    await cardSchema.validateAsync(req.body, { abortEarly: false })
     next()
   }
   catch (error) {
