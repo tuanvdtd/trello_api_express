@@ -105,13 +105,14 @@ const login = async (resBody) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      // 5 // 5 giây
-      env.ACCESS_TOKEN_LIFE
+      5 // 5 giây
+      // env.ACCESS_TOKEN_LIFE
     )
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
       env.REFRESH_TOKEN_SECRET,
-      env.REFRESH_TOKEN_LIFE
+      15
+      // env.REFRESH_TOKEN_LIFE
     )
 
     // Trả về thông tin kèm theo 2 token bên trên
@@ -126,8 +127,36 @@ const login = async (resBody) => {
   }
 }
 
+const refreshToken = async (clientRefreshToken) => {
+  try {
+    //
+    const refreshTokenDecoded = await JwtProvider.verifyToken(clientRefreshToken, env.REFRESH_TOKEN_SECRET)
+    const userInfo = {
+      _id: refreshTokenDecoded._id,
+      email: refreshTokenDecoded.email
+    }
+
+    // Tạo ra accessToken
+    const accessToken = await JwtProvider.generateToken(
+      userInfo,
+      env.ACCESS_TOKEN_SECRET,
+      5 // 5 giây
+      // env.ACCESS_TOKEN_LIFE
+    )
+
+    // Trả về thông tin kèm theo 2 token bên trên
+    return {
+      accessToken
+    }
+
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   verifyAccount,
-  login
+  login,
+  refreshToken
 }
