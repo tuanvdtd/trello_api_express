@@ -9,6 +9,7 @@ import { ResendProvider } from '~/providers/ResendProvider'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { env } from '~/config/environment'
 import { JwtProvider } from '~/providers/JwtProvider'
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 
 const createNew = async (userData) => {
   // Logic to create a new user
@@ -154,7 +155,7 @@ const refreshToken = async (clientRefreshToken) => {
   }
 }
 
-const update = async (userId, updateData) => {
+const update = async (userId, userAvatarFile, updateData) => {
   try {
     // Kiểm tra xem người dùng có tồn tại không
     const existingUser = await userModel.findOneById(userId)
@@ -178,6 +179,11 @@ const update = async (userId, updateData) => {
         { password: bcrypt.hashSync(updateData.new_password, 8) }
       )
 
+    } else if (userAvatarFile) {
+      // upload lên cloundinary
+      const userAvatar = await cloudinaryProvider.streamUpload(userAvatarFile.buffer, 'avatars')
+      // Lưu lại url avatar vào database
+      updatedUser = await userModel.update(userId, { avatar: userAvatar.secure_url })
     } else {
       // update các thông tin khác
       updatedUser = await userModel.update(userId, updateData)
