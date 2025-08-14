@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { BOARD_TYPE } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
+import { pagingSkipValue } from '~/utils/algorithms'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -14,6 +15,12 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+
+  // Danh sách các thành viên trong board
+  memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  // Danh sách các chủ sở hữu của board
+  ownerIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+
   _destroy: Joi.boolean().default(false),
   type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
 })
@@ -119,6 +126,46 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    //
+    const queryConditions = [
+      // Dk1 board chua xoa
+      { _destroy: false },
+      // Dk2 board thuoc ve userId (member or owner)
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
+
+    const query = await DB_GET().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryConditions } },
+      { $sort: { title : 1 } },
+      // Xử lí nhiều luồng
+      { $facet: {
+        // 1 query boards
+        'queryBoards': [
+          { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
+          { $limit: itemsPerPage } // giới hạn tối đa số lượng bản ghi trả về trên 1 page
+        ],
+        // 2 query total count
+        'queryCountTotalBoards': [
+          { $count: 'totalBoards' }
+        ]
+
+      } }
+    ], { collation: { locale: 'en' } }).toArray()
+    const res = query[0]
+    return {
+      boards: res.queryBoards || [],
+      totalBoards: res.queryCountTotalBoards[0]?.totalBoards || 0
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const BoardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -127,6 +174,7 @@ export const BoardModel = {
   getDetails,
   pushColumnIds,
   update,
-  pullColumnIds
+  pullColumnIds,
+  getBoards
 }
 
