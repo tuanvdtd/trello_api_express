@@ -31,10 +31,13 @@ const validBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validBeforeCreate(data)
-    const createdBoard = await DB_GET().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const createdBoard = await DB_GET().collection(BOARD_COLLECTION_NAME).insertOne({
+      ...validData,
+      ownerIds: [new ObjectId(userId)]
+    })
     return createdBoard
   } catch (error) {
     // Handle error
@@ -51,14 +54,21 @@ const getBoardById = async (id) => {
   }
 }
 
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
+  const queryConditions = [
+    { _id: new ObjectId(boardId) },
+    // Dk1 board chua xoa
+    { _destroy: false },
+    // Dk2 board thuoc ve userId (member or owner)
+    { $or: [
+      { ownerIds: { $all: [new ObjectId(userId)] } },
+      { memberIds: { $all: [new ObjectId(userId)] } }
+    ] }
+  ]
   try {
     // const board = await DB_GET().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(boardId) })
     const board = await DB_GET().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: {
-        _id: new ObjectId(boardId),
-        _destroy: false
-      } },
+      { $match: { $and: queryConditions } },
       { $lookup: {
         from: columnModel.COLUMN_COLLECTION_NAME,
         localField: '_id',

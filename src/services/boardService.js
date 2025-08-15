@@ -7,13 +7,13 @@ import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 
-const createNew = async (resBody) => {
+const createNew = async (userId, resBody) => {
   try {
     const newBoard = {
       ...resBody,
       slug: slugify(resBody.title)
     }
-    const createNew = await BoardModel.createNew(newBoard)
+    const createNew = await BoardModel.createNew(userId, newBoard)
     const result = await BoardModel.getBoardById(createNew.insertedId)
     return result
 
@@ -22,9 +22,9 @@ const createNew = async (resBody) => {
   }
 }
 
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
   try {
-    const board = await BoardModel.getDetails(boardId)
+    const board = await BoardModel.getDetails(userId, boardId)
     if (!board) {
       throw new ApiError(StatusCodes.NOT_FOUND, `Board with id ${boardId} not found`)
     }
