@@ -14,6 +14,18 @@ const createNew = async (req, res, next) => {
   }
 }
 
+const update = async (req, res, next) => {
+  try {
+    const cardId = req.params.id
+    const card = await cardService.update(cardId, req.body)
+    res.status(StatusCodes.OK).json(card)
+  } catch (error) {
+    next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message))
+  }
+}
+
+
 export const cardController = {
-  createNew
+  createNew,
+  update
 }
