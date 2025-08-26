@@ -13,6 +13,7 @@ const isAuthorized = async (req, res, next) => {
   try {
     //
     const accessTokenDecoded = await JwtProvider.verifyToken(clientAccessToken, env.ACCESS_TOKEN_SECRET)
+    // Lưu giá trị userId từ accessTokenDecoded vào req để các controller có thể sử dụng để lấy được dữ liệu người dùng
     req.jwtDecoded = accessTokenDecoded
     next()
   } catch (error) {

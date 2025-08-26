@@ -145,7 +145,7 @@ const refreshToken = async (clientRefreshToken) => {
       env.ACCESS_TOKEN_LIFE
     )
 
-    // Trả về thông tin kèm theo 2 token bên trên
+    // Trả về accessToken
     return {
       accessToken
     }

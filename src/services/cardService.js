@@ -1,6 +1,7 @@
 
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 
 const createNew = async (resBody) => {
   try {
@@ -18,14 +19,23 @@ const createNew = async (resBody) => {
     throw new Error(error)
   }
 }
-const update = async (columnId, resBody) => {
+const update = async (cardId, resBody, cardCoverFile) => {
   try {
-    const updatedData = {
+    const updateData = {
       ...resBody,
       updatedAt: Date.now()
     }
-    const updateResult = await cardModel.update(columnId, updatedData)
-    return updateResult
+    let updatedData = { }
+    if (cardCoverFile) {
+      // upload lên cloundinary
+      const cardCover = await cloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
+      // Lưu lại url avatar vào database
+      updatedData = await cardModel.update(cardId, { cover: cardCover.secure_url })
+    } else {
+      // update các thông tin khác
+      updatedData = await cardModel.update(cardId, updateData)
+    }
+    return updatedData
   } catch (error) {
     throw new Error(error)
   }

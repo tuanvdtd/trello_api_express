@@ -11,7 +11,7 @@ const createNew = async (req, res, next) => {
     type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
   })
   try {
-    await boardSchema.validateAsync(req.body, { abortEarly: false });
+    await boardSchema.validateAsync(req.body, { abortEarly: false })
     next()
   }
   catch (error) {

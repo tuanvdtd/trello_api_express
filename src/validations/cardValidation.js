@@ -26,7 +26,7 @@ const createNew = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const cardSchema = Joi.object({
-    title: Joi.string().min(3).max(50).trim().strict(),
+    title: Joi.string().min(3).max(50).trim().strict().optional(),
     description: Joi.string().optional()
   })
   try {
