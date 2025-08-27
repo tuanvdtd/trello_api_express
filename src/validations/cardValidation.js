@@ -30,7 +30,7 @@ const update = async (req, res, next) => {
     description: Joi.string().optional()
   })
   try {
-    await cardSchema.validateAsync(req.body, { abortEarly: false }, { allowUnknown: true })
+    await cardSchema.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
     next()
   }
   catch (error) {

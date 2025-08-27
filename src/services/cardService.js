@@ -19,7 +19,7 @@ const createNew = async (resBody) => {
     throw new Error(error)
   }
 }
-const update = async (cardId, resBody, cardCoverFile) => {
+const update = async (cardId, resBody, cardCoverFile, userInfo) => {
   try {
     const updateData = {
       ...resBody,
@@ -31,7 +31,16 @@ const update = async (cardId, resBody, cardCoverFile) => {
       const cardCover = await cloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
       // Lưu lại url avatar vào database
       updatedData = await cardModel.update(cardId, { cover: cardCover.secure_url })
-    } else {
+    } else if (updateData.newComment) {
+      const commentData = {
+        ...updateData.newComment,
+        userId: userInfo._id,
+        userEmail: userInfo.email,
+        commentedAt: Date.now()
+      }
+      updatedData = await cardModel.addCommentToFirst(cardId, commentData)
+    }
+    else {
       // update các thông tin khác
       updatedData = await cardModel.update(cardId, updateData)
     }

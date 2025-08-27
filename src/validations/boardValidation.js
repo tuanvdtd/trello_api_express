@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
-import {BOARD_TYPE} from '~/utils/constants'
+import { BOARD_TYPE } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const createNew = async (req, res, next) => {
@@ -21,7 +21,7 @@ const createNew = async (req, res, next) => {
     //     message: error.message,
     // });
     // next(error)
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
 }
 
@@ -43,7 +43,7 @@ const update = async (req, res, next) => {
     //     message: error.message,
     // });
     // next(error)
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
 }
 
@@ -66,7 +66,7 @@ const moveCardToDiffColumn = async (req, res, next) => {
     //     message: error.message,
     // });
     // next(error)
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
 }
 

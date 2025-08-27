@@ -23,7 +23,8 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
     userEmail: Joi.string().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
     userAvatar: Joi.string(),
     userDisplayName: Joi.string(),
-    content: Joi.string()
+    content: Joi.string(),
+    commentedAt:Joi.date().timestamp()
   }).default([]),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
@@ -92,11 +93,25 @@ const deleteCardsByColumnId = async (columnId) => {
   }
 }
 
+const addCommentToFirst = async (cardId, commentData) => {
+  try {
+    const updateResult = await DB_GET().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      { $push: { comments:  { $each: [commentData], $position: 0 } } },
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
   getCardById,
   update,
-  deleteCardsByColumnId
+  deleteCardsByColumnId,
+  addCommentToFirst
 }
