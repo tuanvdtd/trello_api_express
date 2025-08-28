@@ -40,7 +40,24 @@ const createNewInvitation = async (inviterId, resBody) => {
   }
 }
 
+const getInvitations = async (inviteeId) => {
+  try {
+    const result = await invitationModel.findInvitationsByInviteeId(inviteeId)
+    const formattedResult = result.map((invitation) => {
+      return {
+        ...invitation,
+        board: invitation.board[0] || {},
+        inviter: invitation.inviter[0] || {},
+        invitee: invitation.invitee[0] || {}
+      }
+    })
+    return formattedResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 export const inviteUserService = {
-  createNewInvitation
+  createNewInvitation,
+  getInvitations
 }

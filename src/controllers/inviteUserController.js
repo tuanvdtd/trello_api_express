@@ -17,6 +17,22 @@ const createNewInvitation = async (req, res, next) => {
   }
 }
 
+const getInvitations = async (req, res, next) => {
+  try {
+    // throw new Error("Error from Controllers");
+    const inviteeId = req.jwtDecoded._id
+    const result = await inviteUserService.getInvitations(inviteeId)
+    // console.log(inviterId)
+    // console.log(req.body)
+    res.status(StatusCodes.OK).json(result)
+
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
 export const inviteUserController = {
-  createNewInvitation
+  createNewInvitation,
+  getInvitations
 }

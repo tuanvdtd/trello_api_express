@@ -3,6 +3,8 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
+import { userModel } from './userModel'
+import { BoardModel } from './boardModel'
 
 const INVITATION_COLLECTION_NAME = 'invitations'
 const INVITATION_COLLECTION_SCHEMA = Joi.object({
@@ -86,12 +88,54 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const findInvitationsByInviteeId = async (inviteeId) => {
+  const queryConditions = [
+    { inviteeId: new ObjectId(inviteeId) },
+    // Dk1 board chua xoa
+    { _destroy: false }
+  ]
+  try {
+    const invitations = await DB_GET().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryConditions } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviterId',
+        foreignField: '_id',
+        as: 'inviter',
+        // không muốn lấy các trường này từ bảng user gắn vào mảng owners thì đặt bằng 0
+        pipeline: [
+          { $project: { 'password': 0, 'verifyToken': 0 } }
+        ]
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviteeId',
+        foreignField: '_id',
+        as: 'invitee',
+        pipeline: [
+          { $project: { 'password': 0, 'verifyToken': 0 } }
+        ]
+      } },
+      { $lookup: {
+        from: BoardModel.BOARD_COLLECTION_NAME,
+        localField: 'boardInvitation.boardId',
+        foreignField: '_id',
+        as: 'board'
+      } }
+    ]).toArray()
+    return invitations
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   getInvitationById,
-  update
+  update,
+  findInvitationsByInviteeId
 }
 
