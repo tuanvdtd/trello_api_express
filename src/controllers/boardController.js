@@ -21,7 +21,7 @@ const getDetails = async (req, res, next) => {
     const board = await boardService.getDetails(userId, boardId)
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
-    next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message))
+    next(error)
   }
 }
 
@@ -31,7 +31,7 @@ const update = async (req, res, next) => {
     const board = await boardService.update(boardId, req.body)
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
-    next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message))
+    next(error)
   }
 }
 
@@ -40,7 +40,7 @@ const moveCardToDiffColumn = async (req, res, next) => {
     const board = await boardService.moveCardToDiffColumn(req.body)
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
-    next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message))
+    next(error)
   }
 }
 
@@ -51,7 +51,7 @@ const getBoards = async (req, res, next) => {
     const boards = await boardService.getBoards(userId, page, itemsPerPage)
     res.status(StatusCodes.OK).json(boards)
   } catch (error) {
-    next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message))
+    next(error)
   }
 }
 

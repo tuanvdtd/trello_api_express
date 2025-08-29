@@ -32,7 +32,26 @@ const getInvitations = async (req, res, next) => {
   }
 }
 
+const updateInvitationStatus = async (req, res, next) => {
+  try {
+    // throw new Error("Error from Controllers");
+    const invitationId = req.params.invitationId
+    const userId = req.jwtDecoded._id
+    const { status } = req.body
+    const result = await inviteUserService.updateInvitationStatus(invitationId, status, userId)
+    // console.log(resBody)
+    // console.log(status)
+    res.status(StatusCodes.OK).json(result)
+
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+
 export const inviteUserController = {
   createNewInvitation,
-  getInvitations
+  getInvitations,
+  updateInvitationStatus
 }

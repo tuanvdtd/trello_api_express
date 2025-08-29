@@ -23,6 +23,7 @@ const createNew = async (userId, resBody) => {
 }
 
 const getDetails = async (userId, boardId) => {
+  // eslint-disable-next-line no-useless-catch
   try {
     const board = await BoardModel.getDetails(userId, boardId)
     if (!board) {
@@ -36,7 +37,7 @@ const getDetails = async (userId, boardId) => {
 
     return boardClone
   } catch (error) {
-    throw new Error(error)
+    throw error
   }
 }
 

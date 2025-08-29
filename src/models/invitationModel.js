@@ -67,19 +67,21 @@ const getInvitationById = async (id) => {
   }
 }
 
-const update = async (boardId, updateData) => {
+const updateInvitationStatus = async (invitationId, updateData) => {
   try {
     Object.keys(updateData).forEach((key) => {
       if (UNCHANGE_FIELDS.includes(key)) {
         delete updateData[key]
       }
     })
-    if (updateData.columnOrderIds) {
-      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => new ObjectId(_id))
-    }
     const updateResult = await DB_GET().collection(INVITATION_COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(boardId) },
-      { $set: updateData },
+      { _id: new ObjectId(invitationId) },
+      { $set: updateData
+        // { boardInvitation:
+        //   { status: updateData.status },
+        // updatedAt: Date.now()
+        // }
+      },
       { returnDocument: 'after' }
     )
     return updateResult
@@ -135,7 +137,7 @@ export const invitationModel = {
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   getInvitationById,
-  update,
+  updateInvitationStatus,
   findInvitationsByInviteeId
 }
 
