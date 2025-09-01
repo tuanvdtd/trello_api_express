@@ -3,6 +3,7 @@ import Joi from 'joi'
 import { EMAIL_RULE_MESSAGE, EMAIL_RULE, OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
+import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 
 // Define Collection (name & schema)
 const CARD_COLLECTION_NAME = 'cards'
@@ -106,6 +107,26 @@ const addCommentToFirst = async (cardId, commentData) => {
   }
 }
 
+const updateCardMembers = async (cardId, updateMemberCardData) => {
+  let actionUpdateMemberCard = {}
+  if (updateMemberCardData.action === CARD_MEMBER_ACTIONS.ADD) {
+    actionUpdateMemberCard = { $push: { memberIds: new ObjectId(updateMemberCardData.userId) } }
+  } else if (updateMemberCardData.action === CARD_MEMBER_ACTIONS.REMOVE) {
+    actionUpdateMemberCard = { $pull: { memberIds: new ObjectId(updateMemberCardData.userId) } }
+  }
+
+  try {
+    const updateResult = await DB_GET().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      actionUpdateMemberCard,
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -113,5 +134,6 @@ export const cardModel = {
   getCardById,
   update,
   deleteCardsByColumnId,
-  addCommentToFirst
+  addCommentToFirst,
+  updateCardMembers
 }

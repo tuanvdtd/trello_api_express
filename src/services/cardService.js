@@ -39,6 +39,9 @@ const update = async (cardId, resBody, cardCoverFile, userInfo) => {
         commentedAt: Date.now()
       }
       updatedData = await cardModel.addCommentToFirst(cardId, commentData)
+      // join, remove member
+    } else if (updateData.updateMemberCardData) {
+      updatedData = await cardModel.updateCardMembers(cardId, updateData.updateMemberCardData)
     }
     else {
       // update các thông tin khác
