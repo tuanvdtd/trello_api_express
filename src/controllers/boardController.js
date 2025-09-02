@@ -47,8 +47,10 @@ const moveCardToDiffColumn = async (req, res, next) => {
 const getBoards = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
-    const { page, itemsPerPage } = req.query
-    const boards = await boardService.getBoards(userId, page, itemsPerPage)
+    const { page, itemsPerPage, q } = req.query
+    const querySearchBoard = q
+    // console.log('querySearchBoard', querySearchBoard)
+    const boards = await boardService.getBoards(userId, page, itemsPerPage, querySearchBoard)
     res.status(StatusCodes.OK).json(boards)
   } catch (error) {
     next(error)

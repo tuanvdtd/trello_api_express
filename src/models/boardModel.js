@@ -156,7 +156,7 @@ const update = async (boardId, updateData) => {
   }
 }
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, querySearchBoard) => {
   try {
     //
     const queryConditions = [
@@ -168,6 +168,15 @@ const getBoards = async (userId, page, itemsPerPage) => {
         { memberIds: { $all: [new ObjectId(userId)] } }
       ] }
     ]
+    if (querySearchBoard) {
+      Object.keys(querySearchBoard).forEach((field) => {
+        // Cho phép tìm kiếm theo nhiều trường, sử dụng regex của mogodb, và kh phân biệt chữ hoa chữ thường
+        queryConditions.push({ [field]: { $regex: new RegExp(querySearchBoard[field], 'i') } })
+
+        // Phân biệt chữ hoa chữ thường
+        // queryConditions.push({ [field]: { $regex: querySearchBoard[field] } })
+      })
+    }
 
     const query = await DB_GET().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: { $and: queryConditions } },

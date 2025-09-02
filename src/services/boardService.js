@@ -78,13 +78,13 @@ const moveCardToDiffColumn = async (resBody) => {
   }
 }
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, querySearchBoard) => {
   try {
     if (!page) page = DEFAULT_PAGE
     if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
 
 
-    const boards = await BoardModel.getBoards(userId, parseInt(page, 10), parseInt(itemsPerPage, 10))
+    const boards = await BoardModel.getBoards(userId, parseInt(page, 10), parseInt(itemsPerPage, 10), querySearchBoard)
     return boards
   } catch (error) {
     throw new Error(error)
