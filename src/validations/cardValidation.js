@@ -27,14 +27,14 @@ const createNew = async (req, res, next) => {
 const update = async (req, res, next) => {
   const cardSchema = Joi.object({
     title: Joi.string().min(3).max(50).trim().strict().optional(),
-    description: Joi.string().optional()
+    description: Joi.string().allow('').optional()
   })
   try {
     await cardSchema.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
     next()
   }
   catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+    next(error)
   }
 }
 
