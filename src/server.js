@@ -39,16 +39,19 @@ const START_SERVER = () => {
   io.on('connection', (socket) => {
     inviteUserToBoardSocket(socket)
   })
-  // if (env.BUILD_MODE === 'production') {
-  //   server.listen(process.env.PORT, () => {
-  //     console.log(`Production: Hi ${env.AUTHOR}, BE are running`)
-  //   })
-  // }
 
-  server.listen(env.PORT, env.HOSTNAME, () => {
-    // eslint-disable-next-line no-console
-    console.log(`Hello ${env.AUTHOR}, I am running at http://${env.HOSTNAME}:${env.PORT}/`)
-  })
+  // Lắng nghe sự kiện kết nối socket
+  if (env.BUILD_MODE === 'production') {
+    server.listen(process.env.PORT, () => {
+      console.log(`Hi ${env.AUTHOR},I am running in production mode at port: ${process.env.PORT}/`)
+    })
+  } else {
+    server.listen(env.PORT, env.HOSTNAME, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Hello ${env.AUTHOR}, I am running at http://${env.HOSTNAME}:${env.PORT}/`)
+    })
+  }
+
 
   exitHook(async () => {
     console.log('Shutting down database...')
