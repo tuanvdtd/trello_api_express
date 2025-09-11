@@ -5,7 +5,9 @@ import { env } from '~/config/environment'
  * Danh sách các domain được phép truy cập API
  */
 
-export const WHITELIST_DOMAINS = []
+export const WHITELIST_DOMAINS = [
+  'https://trello-web-beige.vercel.app'
+]
 
 export const BOARD_TYPE = {
   PUBLIC: 'public',
