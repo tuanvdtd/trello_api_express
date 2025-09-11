@@ -1,13 +1,11 @@
+
+import { env } from '~/config/environment'
+
 /**
  * Danh sách các domain được phép truy cập API
  */
 
-import { env } from '~/config/environment'
-
-export const WHITELIST_DOMAINS = [
-  'http://localhost:5173'
-  // React app running on localhost
-]
+export const WHITELIST_DOMAINS = []
 
 export const BOARD_TYPE = {
   PUBLIC: 'public',
