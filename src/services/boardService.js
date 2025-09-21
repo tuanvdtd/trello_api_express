@@ -6,6 +6,7 @@ import { cloneDeep } from 'lodash'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 
 const createNew = async (userId, resBody) => {
   try {
@@ -41,14 +42,33 @@ const getDetails = async (userId, boardId) => {
   }
 }
 
-const update = async (boardId, resBody) => {
+const update = async (boardId, resBody, backgroundFile) => {
   try {
-    const updatedData = {
-      ...resBody,
-      updatedAt: Date.now()
+    let result = {}
+    if (backgroundFile) {
+      const backgroundCover = await cloudinaryProvider.streamUpload(backgroundFile.buffer, 'background-covers')
+      // Lưu lại url avatar vào database
+      const background = {
+        backgroundType: 'image',
+        backgroundUrl: backgroundCover.secure_url
+      }
+      result = await BoardModel.update(boardId, { background })
     }
-    const updateResult = await BoardModel.update(boardId, updatedData)
-    return updateResult
+    else if (resBody.updateBackgroundBoard) {
+      const background = {
+        backgroundType: resBody.updateBackgroundBoard.backgroundType,
+        backgroundUrl: resBody.updateBackgroundBoard.defaultImage
+      }
+      result = await BoardModel.update(boardId, { background })
+    }
+    else {
+      const updatedData = {
+        ...resBody,
+        updatedAt: Date.now()
+      }
+      result = await BoardModel.update(boardId, updatedData)
+    }
+    return result
   } catch (error) {
     throw new Error(error)
   }

@@ -11,13 +11,13 @@ export const corsOptions = {
       return callback(null, true)
     }
     // Ngược lại là production thì làm các bước tiếp theo
-    // Kiểm tra dem origin có phải là domain được chấp nhận hay không
-    else if (WHITELIST_DOMAINS.includes(origin)) {
+    // Kiểm tra xem origin có phải là domain được chấp nhận hay không
+    if (WHITELIST_DOMAINS.includes(origin)) {
       return callback(null, true)
     }
 
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
-    else return callback(new ApiError(StatusCodes.FORBIDDEN, `${origin} not allowed by our CORS Policy.`))
+    return callback(new ApiError(StatusCodes.FORBIDDEN, `${origin} not allowed by our CORS Policy.`))
   },
 
   // Some legacy browsers (IE11, various SmartTVs) choke on 204

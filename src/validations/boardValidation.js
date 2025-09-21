@@ -33,7 +33,7 @@ const update = async (req, res, next) => {
     columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
   })
   try {
-    await boardSchema.validateAsync(req.body, { abortEarly: false }, { allowUnknown: true })
+    await boardSchema.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
     next()
   }
   catch (error) {

@@ -23,6 +23,10 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   ownerIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
   _destroy: Joi.boolean().default(false),
+  background: Joi.object({
+    backgroundType: Joi.string().valid('image', 'gradient', 'color').required(),
+    backgroundUrl: Joi.string().required()
+  }).optional(),
   type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
 })
 
