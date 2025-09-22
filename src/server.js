@@ -26,6 +26,41 @@ const START_SERVER = () => {
   app.use(cookieParser())
   app.use(cors(corsOptions))
 
+  app.get('/', (req, res) => {
+  const mode = env.BUILD_MODE === 'production' ? 'PRODUCTION' : 'DEVELOPMENT'
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Trello API Server</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { background: ${mode === 'PRODUCTION' ? '#4CAF50' : '#2196F3'}; color: white; padding: 10px 20px; border-radius: 5px; text-align: center; margin-bottom: 20px; }
+        .info { background: #f9f9f9; padding: 15px; border-radius: 5px; }
+        .info div { margin: 5px 0; }
+        .label { font-weight: bold; display: inline-block; width: 120px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🚀 Trello API Server</h1>
+        <div class="status">
+          <h2>Status: Running (${mode})</h2>
+        </div>
+        <div class="info">
+          <div><span class="label">Environment:</span> ${mode}</div>
+          <div><span class="label">Started:</span> ${new Date().toLocaleString()}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  res.send(html)
+})
+
   app.use('/v1', Router_V1)
   app.use(errorHandlingMiddleware)
 
