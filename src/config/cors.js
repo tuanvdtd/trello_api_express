@@ -6,6 +6,7 @@ import ApiError from '~/utils/ApiError'
 // Cấu hình CORS Option trong dự án thực tế
 export const corsOptions = {
   origin: function (origin, callback) {
+    console.log('CORS Origin:', origin)
     // Nếu môi trường là dev thì cho phép tất cả
     if ( env.BUILD_MODE === 'dev') {
       return callback(null, true)
@@ -23,6 +24,6 @@ export const corsOptions = {
   // Some legacy browsers (IE11, various SmartTVs) choke on 204
   optionsSuccessStatus: 200,
 
-  // CORS sẽ cho phép nhận cookies từ request, (Nhá hàng :D | Ở khóa MERN Stack Advance nâng cao học trực tiếp mình sẽ hướng dẫn các bạn đính kèm jwt access token và refresh token vào httpOnly Cookies)
+  // CORS sẽ cho phép nhận cookies từ request
   credentials: true
 }
