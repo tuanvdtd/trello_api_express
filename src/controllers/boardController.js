@@ -6,6 +6,7 @@ const createNew = async (req, res, next) => {
   try {
     // throw new Error("Error from Controllers");
     const userId = req.jwtDecoded._id
+    // console.log('req.body', req.body)
     const createdBoard = await boardService.createNew(userId, req.body)
     res.status(StatusCodes.CREATED).json(createdBoard)
 

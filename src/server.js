@@ -51,7 +51,7 @@ const START_SERVER = () => {
         </div>
         <div class="info">
           <div><span class="label">Environment:</span> ${mode}</div>
-          <div><span class="label">Started:</span> ${new Date().toLocaleString()}</div>
+          <div><span class="label">Started:</span> ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</div>
         </div>
       </div>
     </body>

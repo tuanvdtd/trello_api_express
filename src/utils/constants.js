@@ -30,3 +30,31 @@ export const CARD_MEMBER_ACTIONS = {
   ADD: 'ADD',
   REMOVE: 'REMOVE'
 }
+
+export const BOARD_TEMPLATES = {
+  Kanban: {
+    columns: [
+      { title: 'Backlog' },
+      { title: 'To Do' },
+      { title: 'In Progress' },
+      { title: 'Review' },
+      { title: 'Done' }
+    ]
+  },
+  Scrum: {
+    columns: [
+      { title: 'To Do' },
+      { title: 'In Progress' },
+      { title: 'Done' }
+    ]
+  },
+  Extreme: {
+    columns: [
+      { title: 'Planning' },
+      { title: 'Design' },
+      { title: 'Coding' },
+      { title: 'Testing' },
+      { title: 'Listening' }
+    ]
+  }
+}

@@ -7,19 +7,53 @@ import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
+import { BOARD_TEMPLATES } from '~/utils/constants'
 
 const createNew = async (userId, resBody) => {
   try {
     const newBoard = {
-      ...resBody,
+      title: resBody.title,
+      description: resBody.description,
+      type: resBody.type,
       slug: slugify(resBody.title)
     }
     const createNew = await BoardModel.createNew(userId, newBoard)
-    const result = await BoardModel.getBoardById(createNew.insertedId)
+    const boardId = createNew.insertedId.toString()
+    // Tạo các column từ template (nếu có)
+    if (resBody.template && BOARD_TEMPLATES[resBody.template]) {
+      await createColumnsFromTemplate(boardId, BOARD_TEMPLATES[resBody.template])
+    }
+    const result = await BoardModel.getBoardById(boardId)
     return result
 
   } catch (error) {
     throw new Error(error)
+  }
+}
+
+const createColumnsFromTemplate = async (boardId, template) => {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    if (!template) return
+
+    const columnIds = []
+    // Tạo từng column
+    for (const columnData of template.columns) {
+      const newColumn = await columnModel.createNew({
+        boardId: boardId,
+        title: columnData.title
+      })
+      columnIds.push(newColumn.insertedId)
+    }
+
+    // Update board với columnOrderIds
+    await BoardModel.update(boardId, {
+      columnOrderIds: columnIds,
+      updatedAt: Date.now()
+    })
+
+  } catch (error) {
+    throw error
   }
 }
 

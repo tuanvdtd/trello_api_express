@@ -9,9 +9,10 @@ const createNew = async (req, res, next) => {
     title: Joi.string().required().min(3).max(50).trim().strict(),
     description: Joi.string().required().min(3).max(250).trim().strict(),
     type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
+    // template: Joi.string().valid('Kanban', 'Scrum', 'Extreme', 'Custom').optional() // Chỉ cho phép các template có sẵn
   })
   try {
-    await boardSchema.validateAsync(req.body, { abortEarly: false })
+    await boardSchema.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
     next()
   }
   catch (error) {
