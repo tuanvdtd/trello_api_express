@@ -5,7 +5,8 @@ import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/fomatter'
-import { ResendProvider } from '~/providers/ResendProvider'
+// import { ResendProvider } from '~/providers/ResendProvider'
+import { BrevoProvider } from '~/providers/BrevoProdiver'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { env } from '~/config/environment'
 import { JwtProvider } from '~/providers/JwtProvider'
@@ -37,7 +38,6 @@ const createNew = async (userData) => {
     // Gửi email cho người dùng xác thực tài khoản
     const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${result.email}&token=${result.verifyToken}`
     const to = result.email
-    const subject = 'Welcome to Our Service!'
     const html = `
     <h1>Welcome!</h1>
     <h2>Thank you for joining us.</h2>
@@ -45,7 +45,11 @@ const createNew = async (userData) => {
     <h3>${verificationLink}</h3>
     <h3>Sincerely!</h3>
     `
-    await ResendProvider.sendEmail({ to, subject, html })
+    // await ResendProvider.sendEmail({ to, subject, html })
+    // Sử dụng Brevo để gửi email
+    const customSubject = 'Trello MERN: Please verify your email before using our services!'
+    // Gọi tới cái Provider gửi email
+    await BrevoProvider.sendEmail(to, customSubject, html)
 
     // return trả về dữ liệu người dùng đã tạo
     return pickUser(result)

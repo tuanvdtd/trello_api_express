@@ -1,4 +1,3 @@
-
 import Joi from 'joi'
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
