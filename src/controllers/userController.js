@@ -51,6 +51,35 @@ const login = async (req, res, next) => {
   }
 }
 
+const loginGoogle = async (req, res, next) => {
+  try {
+    const resBody = req.body
+    console.log('resBody:', resBody)
+    const result = await userService.loginGoogle(resBody)
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: ms('14 days')
+    })
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: ms('14 days')
+    })
+    res.status(StatusCodes.OK).json(result)
+    // F24GQttruQbBeJnbNbHwI9NgHnQe7rhN
+    // E0R_mzPajFHGwmiy9l3vSF46yaCMwdNr-CQY53zUKqcZ0HtcdFL-cxQe3b1Zv304
+
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
 const logout = async (req, res, next) => {
   try {
     res.clearCookie('accessToken')
@@ -100,6 +129,7 @@ export const userController = {
   createNew,
   verifyAccount,
   login,
+  loginGoogle,
   logout,
   refreshToken,
   update

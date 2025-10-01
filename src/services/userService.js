@@ -132,6 +132,73 @@ const login = async (resBody) => {
   }
 }
 
+const loginGoogle = async (resBody) => {
+  try {
+    //
+    const existingUser = await userModel.findOneByEmail(resBody.email)
+    if (existingUser) {
+      const userInfo = {
+        _id: existingUser._id,
+        email: existingUser.email
+      }
+
+      const accessToken = await JwtProvider.generateToken(
+        userInfo,
+        env.ACCESS_TOKEN_SECRET,
+        env.ACCESS_TOKEN_LIFE
+      )
+      const refreshToken = await JwtProvider.generateToken(
+        userInfo,
+        env.REFRESH_TOKEN_SECRET,
+        env.REFRESH_TOKEN_LIFE
+      )
+
+      return {
+        accessToken,
+        refreshToken,
+        ...pickUser(existingUser)
+      }
+    }
+    // Tạo data lưu vào database
+    const dataNewUser = {
+      email: resBody.email,
+      username: resBody.name || resBody.email.split('@')[0],
+      displayName: resBody.name || resBody.email.split('@')[0],
+      avatar: resBody.picture || null, // Lưu avatar từ Google
+      isActive: true
+    }
+    const createdUser = await userModel.createNew(dataNewUser)
+    const result = await userModel.findOneById(createdUser.insertedId)
+
+    // Tạo tokens cho user mới
+    const userInfo = {
+      _id: result._id,
+      email: result.email
+    }
+
+    const accessToken = await JwtProvider.generateToken(
+      userInfo,
+      env.ACCESS_TOKEN_SECRET,
+      env.ACCESS_TOKEN_LIFE
+    )
+    const refreshToken = await JwtProvider.generateToken(
+      userInfo,
+      env.REFRESH_TOKEN_SECRET,
+      env.REFRESH_TOKEN_LIFE
+    )
+
+    return {
+      accessToken,
+      refreshToken,
+      ...pickUser(result)
+    }
+
+
+  } catch (error) {
+    throw error
+  }
+}
+
 const refreshToken = async (clientRefreshToken) => {
   try {
     //
@@ -204,6 +271,7 @@ export const userService = {
   createNew,
   verifyAccount,
   login,
+  loginGoogle,
   refreshToken,
   update
 }
