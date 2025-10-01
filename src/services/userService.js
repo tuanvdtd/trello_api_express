@@ -28,6 +28,7 @@ const createNew = async (userData) => {
       email: userData.email,
       password: bcrypt.hashSync(userData.password, 8),
       username: nameFromEmail,
+      authProvider: 'local',
       displayName: nameFromEmail, // Mặc định tên hiển thị là tên từ email
       verifyToken: uuidv4()
     }
@@ -95,6 +96,14 @@ const login = async (resBody) => {
     }
     if (!existingUser.isActive) {
       throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Account is not active! Please verify your account first.')
+    }
+    // Nếu tài khoản là social login thì không thể đăng nhập bằng email/password
+    if (existingUser.authProvider !== 'local') {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `This account was created with ${existingUser.authProvider}. Please use that login method.`)
+    }
+    // Kiểm tra mật khẩu
+    if (!existingUser.password) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'This account does not have a password. Please use social login.')
     }
     if (!bcrypt.compareSync(resBody.password, existingUser.password)) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid password!')
@@ -164,7 +173,8 @@ const loginGoogle = async (resBody) => {
       email: resBody.email,
       username: resBody.name || resBody.email.split('@')[0],
       displayName: resBody.name || resBody.email.split('@')[0],
-      avatar: resBody.picture || null, // Lưu avatar từ Google
+      avatar: resBody.picture || null,
+      authProvider: 'google',
       isActive: true
     }
     const createdUser = await userModel.createNew(dataNewUser)
@@ -240,6 +250,12 @@ const update = async (userId, userAvatarFile, updateData) => {
     let updatedUser = { }
     // Trường hợp thay đổi mật khẩu
     if (updateData.new_password && updateData.current_password) {
+      if (existingUser.authProvider !== 'local') {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot change password for social login accounts.')
+      }
+      if (!existingUser.password) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'This account does not have a password.')
+      }
       // Kiểm tra xem current_password có đúng hay không
       if (!bcrypt.compareSync(updateData.current_password, existingUser.password)) {
         // Nên tránh mã authorized 401 vì khi trả về mã 401 cho bên fe thì phần interceptor sẽ logout luôn
