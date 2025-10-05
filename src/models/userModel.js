@@ -3,30 +3,25 @@ import { EMAIL_RULE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
 
-const USER_ROLES = {
-  ADMIN: 'admin',
-  CLIENT: 'client'
-}
+// const USER_ROLES = {
+//   ADMIN: 'admin',
+//   CLIENT: 'client'
+// }
 
 // Define Collection (name & schema)
 const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
   email: Joi.string().required().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
-  password: Joi.string().required().custom((value, helpers) => {
-    if (helpers.state.ancestors[0].authProvider === 'local') {
-      return value
-    }
-    return helpers.message('Password is not required for social login')
-  }),
+  password: Joi.string().required(),
   //
   username: Joi.string().required().trim().strict(),
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
-  role: Joi.string().valid(USER_ROLES.ADMIN, USER_ROLES.CLIENT).default(USER_ROLES.CLIENT),
+  // role: Joi.string().valid(USER_ROLES.ADMIN, USER_ROLES.CLIENT).default(USER_ROLES.CLIENT),
 
   isActive: Joi.boolean().default(false),
   verifyToken: Joi.string(),
-  authProvider: Joi.string().valid('local', 'google').default('local'),
+  authProvider: Joi.string().valid('local').default('local'),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -41,13 +36,13 @@ const SOCIAL_USER_SCHEMA = Joi.object({
   username: Joi.string().required().trim().strict(),
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
-  role: Joi.string().valid(USER_ROLES.ADMIN, USER_ROLES.CLIENT).default(USER_ROLES.CLIENT),
+  // role: Joi.string().valid(USER_ROLES.ADMIN, USER_ROLES.CLIENT).default(USER_ROLES.CLIENT),
   isActive: Joi.boolean().default(true), // Auto-verified
   authProvider: Joi.string().valid('google', 'auth0').required(),
-  auth0Id: Joi.string().optional(),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
-  _destroy: Joi.boolean().default(false)
+  _destroy: Joi.boolean().default(false),
+  require_2fa: Joi.boolean().default(false)
 })
 
 const UNCHANGE_FIELDS = ['_id', 'email', 'username', 'createdAt']

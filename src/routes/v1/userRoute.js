@@ -19,7 +19,7 @@ Router.route('/login_google')
   .post(userController.loginGoogle)
 
 Router.route('/logout')
-  .delete(userController.logout)
+  .delete(authMiddleware.isAuthorized, userController.logout)
 
 Router.route('/refresh_token')
   .get(userController.refreshToken)
@@ -31,5 +31,17 @@ Router.route('/update')
     userValidation.update,
     userController.update
   )
+
+Router.route('/get_2fa_qr_code')
+  .get(authMiddleware.isAuthorized, userController.get2FA_QRCode)
+
+Router.route('/setup_2fa')
+  .post(authMiddleware.isAuthorized, userController.setup2FA)
+
+Router.route('/verify_2fa')
+  .put(authMiddleware.isAuthorized, userController.verify2FA)
+
+Router.route('/disable_2fa')
+  .put(authMiddleware.isAuthorized, userController.disable2FA)
 
 export const userRoute = Router

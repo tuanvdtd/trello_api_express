@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { userService } from '~/services/userService'
 import ms from 'ms'
 import ApiError from '~/utils/ApiError'
+import { userSessionModel } from '~/models/userSessionModel'
 
 const createNew = async (req, res, next) => {
   try {
@@ -53,9 +54,10 @@ const login = async (req, res, next) => {
 
 const loginGoogle = async (req, res, next) => {
   try {
+    const device = req.headers['user-agent'] || 'Unknown device'
     const resBody = req.body
-    console.log('resBody:', resBody)
-    const result = await userService.loginGoogle(resBody)
+    // console.log('resBody:', resBody)
+    const result = await userService.loginGoogle(resBody, device)
 
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
@@ -82,6 +84,9 @@ const loginGoogle = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
+    const device = req.headers['user-agent'] || 'Unknown device'
+    const userId = req.jwtDecoded._id
+    await userSessionModel.deleteSessionByDeviceId(userId, device)
     res.clearCookie('accessToken')
     res.clearCookie('refreshToken')
     res.status(StatusCodes.OK).json({ message: 'Logged out successfully' })
@@ -124,6 +129,49 @@ const update = async (req, res, next) => {
   }
 }
 
+const get2FA_QRCode = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const result = await userService.get2FA_QRCode(userId)
+    res.status(StatusCodes.OK).json({ qrcode: result })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+const setup2FA = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const device = req.headers['user-agent'] || 'Unknown device'
+    const result = await userService.setup2FA(userId, req.body, device)
+    res.status(StatusCodes.OK).json(result)
+  }
+  catch (error) {
+    next(error)
+  }
+}
+const verify2FA = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const device = req.headers['user-agent'] || 'Unknown device'
+    const result = await userService.verify2FA(userId, req.body, device)
+    res.status(StatusCodes.OK).json(result)
+  }
+  catch (error) {
+    next(error)
+  }
+}
+const disable2FA = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const result = await userService.disable2FA(userId)
+    res.status(StatusCodes.OK).json(result)
+  }
+  catch (error) {
+    next(error)
+  }
+}
 
 export const userController = {
   createNew,
@@ -132,5 +180,9 @@ export const userController = {
   loginGoogle,
   logout,
   refreshToken,
-  update
+  update,
+  get2FA_QRCode,
+  setup2FA,
+  verify2FA,
+  disable2FA
 }
