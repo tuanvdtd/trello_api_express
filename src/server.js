@@ -12,6 +12,7 @@ import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
+import { updateCardSocket } from './sockets/updateCardSoket'
 
 const START_SERVER = () => {
   const app = express()
@@ -73,6 +74,7 @@ const START_SERVER = () => {
   // eslint-disable-next-line no-unused-vars
   io.on('connection', (socket) => {
     inviteUserToBoardSocket(socket)
+    updateCardSocket(socket)
   })
 
   // Lắng nghe sự kiện kết nối socket
