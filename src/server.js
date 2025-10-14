@@ -12,7 +12,8 @@ import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
-import { updateCardSocket } from './sockets/updateCardSoket'
+import { updateCardSocket } from './sockets/updateCardSocket'
+import { boardUpdateSocket } from './sockets/boardUpdateSocket'
 
 const START_SERVER = () => {
   const app = express()
@@ -75,6 +76,7 @@ const START_SERVER = () => {
   io.on('connection', (socket) => {
     inviteUserToBoardSocket(socket)
     updateCardSocket(socket)
+    boardUpdateSocket(socket)
   })
 
   // Lắng nghe sự kiện kết nối socket
