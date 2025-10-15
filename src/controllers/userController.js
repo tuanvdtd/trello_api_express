@@ -173,6 +173,32 @@ const disable2FA = async (req, res, next) => {
   }
 }
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body
+    // console.log('email', email)
+    const result = await userService.forgotPassword(email)
+    res.status(StatusCodes.OK).json(result)
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, token, password } = req.body
+    // console.log('email', email)
+    // console.log('token', token)
+    // console.log('password', password)
+    const result = await userService.resetPassword(email, token, password)
+    res.status(StatusCodes.OK).json(result)
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   createNew,
   verifyAccount,
@@ -184,5 +210,7 @@ export const userController = {
   get2FA_QRCode,
   setup2FA,
   verify2FA,
-  disable2FA
+  disable2FA,
+  forgotPassword,
+  resetPassword
 }

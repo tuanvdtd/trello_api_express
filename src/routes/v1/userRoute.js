@@ -44,4 +44,10 @@ Router.route('/verify_2fa')
 Router.route('/disable_2fa')
   .put(authMiddleware.isAuthorized, userController.disable2FA)
 
+Router.route('/forgot-password')
+  .post(userController.forgotPassword)
+
+Router.route('/reset-password')
+  .post(userValidation.resetPassword, userController.resetPassword)
+
 export const userRoute = Router

@@ -388,6 +388,53 @@ const verify2FA = async (userId, reqBody, device) => {
   }
 }
 
+const forgotPassword = async (email) => {
+  try {
+    const userId = await userModel.findOneByEmail(email)
+    if (!userId) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
+    }
+    const token = uuidv4()
+    await userModel.update(userId._id, { verifyToken: token })
+    const resetLink = `${WEBSITE_DOMAIN}/reset-password?email=${email}&token=${token}`
+    const to = email
+    const html = `
+    <h1>Password Reset Request</h1>
+    <p>We received a request to reset your password. Click the link below to reset it:</p>
+    <h3>${resetLink}</h3>
+    <p>If you did not request a password reset, please ignore this email.</p>
+    <p>Thank you!</p>
+    `
+    const customSubject = 'Trello MERN: Password Reset Request'
+    await BrevoProvider.sendEmail(to, customSubject, html)
+    return { message: 'Password reset link has been sent to your email.' }
+  }
+  catch (error) {
+    throw error
+  }
+}
+
+const resetPassword = async (email, token, password) => {
+  try {
+    const userId = await userModel.findOneByEmail(email)
+    if (!userId) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
+    }
+    if (userId.verifyToken !== token) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Invalid or expired token!')
+    }
+    const updateData = {
+      password: bcrypt.hashSync(password, 8),
+      verifyToken: null
+    }
+    await userModel.update(userId._id, updateData)
+    return { message: 'Password has been reset successfully.' }
+  }
+  catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   verifyAccount,
@@ -397,6 +444,8 @@ export const userService = {
   update,
   get2FA_QRCode,
   setup2FA,
-  verify2FA
+  verify2FA,
   // disable2FA
+  forgotPassword,
+  resetPassword
 }

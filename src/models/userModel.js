@@ -114,6 +114,7 @@ const update = async (userId, updateData) => {
   }
 }
 
+
 export const userModel = {
   USER_COLLECTION_NAME,
   USER_COLLECTION_SCHEMA,
