@@ -8,10 +8,10 @@ export const corsOptions = {
   origin: function (origin, callback) {
     // console.log('CORS Origin:', origin)
     // Nếu môi trường là dev thì cho phép tất cả
-    if ( env.BUILD_MODE === 'dev') {
+    if (env.BUILD_MODE === 'dev') {
       return callback(null, true)
     }
-    // fix lỗi reload server bị lỗi CORS khi origin undefined (mở trực tiếp trên trình duyệt hoặc dùng tool như postman, curl để test API)
+    // fix lỗi reload server bị lỗi CORS khi origin undefined
     if (!origin) {
       return callback(null, true)
     }

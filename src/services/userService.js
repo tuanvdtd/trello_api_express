@@ -125,7 +125,7 @@ const login = async (resBody, device) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      // 5 // 5 giây
+      // 20 // 5 giây
       env.ACCESS_TOKEN_LIFE
     )
     const refreshToken = await JwtProvider.generateToken(
@@ -163,6 +163,7 @@ const loginGoogle = async (resBody) => {
       const accessToken = await JwtProvider.generateToken(
         userInfo,
         env.ACCESS_TOKEN_SECRET,
+        // 20
         env.ACCESS_TOKEN_LIFE
       )
       const refreshToken = await JwtProvider.generateToken(
@@ -396,7 +397,7 @@ const forgotPassword = async (email) => {
     }
     const token = uuidv4()
     await userModel.update(userId._id, { verifyToken: token })
-    const resetLink = `${WEBSITE_DOMAIN}/reset-password?email=${email}&token=${token}`
+    const resetLink = `${WEBSITE_DOMAIN}/account/reset-password?email=${email}&token=${token}`
     const to = email
     const html = `
     <h1>Password Reset Request</h1>

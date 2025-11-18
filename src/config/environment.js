@@ -25,3 +25,10 @@ export const env = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
 }
+
+// Log để debug
+console.log('Environment Config:', {
+  BUILD_MODE: env.BUILD_MODE,
+  ACCESS_TOKEN_SECRET: env.ACCESS_TOKEN_SECRET ? 'Set' : 'Not Set',
+  REFRESH_TOKEN_SECRET: env.REFRESH_TOKEN_SECRET ? 'Set' : 'Not Set'
+})

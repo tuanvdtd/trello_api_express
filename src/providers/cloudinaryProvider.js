@@ -36,6 +36,46 @@ const streamUpload = (fileBuffer, folderName) => {
   })
 }
 
-export const cloudinaryProvider = {
-  streamUpload
+// Upload với public_id cố định và overwrite
+const streamUploadWithOverwrite = (fileBuffer, folderName, publicId) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinaryv2.uploader.upload_stream({
+      folder: folderName,
+      public_id: publicId,
+      overwrite: true, // Ghi đè nếu đã tồn tại
+      invalidate: true // Clear cache CDN
+    },
+    (error, result) => {
+      if (result) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+    streamifier.createReadStream(fileBuffer).pipe(stream)
+  })
 }
+
+// Xóa ảnh theo public_id (vẫn cần cho trường hợp khác)
+const destroy = async (publicId) => {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    const res = await cloudinaryv2.uploader.destroy(publicId)
+    return res
+  } catch (error) {
+    throw error
+  }
+}
+
+export const cloudinaryProvider = {
+  streamUpload,
+  streamUploadWithOverwrite,
+  destroy
+}
+
+// const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+//           folder: 'users',
+//           public_id: `user_${req.user._id} ${name}`, // Tên ảnh
+//           overwrite: true, // Ghi đè nếu đã tồn tại
+//         });
+//         user.profilePic = uploadResponse.secure_url; // URL ảnh từ cloudinary

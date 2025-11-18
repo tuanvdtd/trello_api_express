@@ -190,7 +190,37 @@ const getBoards = async (userId, page, itemsPerPage, querySearchBoard) => {
         // 1 query boards
         'queryBoards': [
           { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
-          { $limit: itemsPerPage } // giới hạn tối đa số lượng bản ghi trả về trên 1 page
+          { $limit: itemsPerPage }, // giới hạn tối đa số lượng bản ghi trả về trên 1 page
+
+          // Lookup owners (chỉ lấy displayName và avatar)
+          { $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'ownerIds',
+            foreignField: '_id',
+            as: 'owners',
+            pipeline: [
+              { $project: { displayName: 1, avatar: 1 } }
+            ]
+          } },
+
+          // Lookup members (chỉ lấy displayName và avatar)
+          { $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'memberIds',
+            foreignField: '_id',
+            as: 'members',
+            pipeline: [
+              { $project: { displayName: 1, avatar: 1 } }
+            ]
+          } },
+
+          // Merge owners into members and deduplicate
+          { $addFields: {
+            members: { $setUnion: ['$owners', '$members'] }
+          } },
+
+          // Remove owners array (we merged it)
+          { $project: { owners: 0 } }
         ],
         // 2 query total count
         'queryCountTotalBoards': [
