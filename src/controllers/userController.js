@@ -74,14 +74,14 @@ const loginGoogle = async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: ms('60s')
+      maxAge: ms('14 days')
     })
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: ms('60s')
+      maxAge: ms('14 days')
     })
 
     // Lưu sessionId vào cookie để có thể logout dù token expired
@@ -90,7 +90,7 @@ const loginGoogle = async (req, res, next) => {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        maxAge: ms('60s')
+        maxAge: ms('14 days')
       })
     }
 

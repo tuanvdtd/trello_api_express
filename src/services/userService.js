@@ -125,14 +125,14 @@ const login = async (resBody, device) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      20
-      // env.ACCESS_TOKEN_LIFE
+      // 20
+      env.ACCESS_TOKEN_LIFE
     )
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
       env.REFRESH_TOKEN_SECRET,
-      60
-      // env.REFRESH_TOKEN_LIFE
+      // 60
+      env.REFRESH_TOKEN_LIFE
     )
 
     // Tạo hoặc lấy session
@@ -180,13 +180,13 @@ const loginGoogle = async (resBody, device) => {
       const accessToken = await JwtProvider.generateToken(
         userInfo,
         env.ACCESS_TOKEN_SECRET,
-        20
+        env.ACCESS_TOKEN_LIFE
         // env.ACCESS_TOKEN_LIFE
       )
       const refreshToken = await JwtProvider.generateToken(
         userInfo,
         env.REFRESH_TOKEN_SECRET,
-        60
+        env.REFRESH_TOKEN_LIFE
         // env.REFRESH_TOKEN_LIFE
       )
 
@@ -274,8 +274,8 @@ const refreshToken = async (clientRefreshToken) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      20 // 5 giây
-      // env.ACCESS_TOKEN_LIFE
+      // 20 // 5 giây
+      env.ACCESS_TOKEN_LIFE
     )
 
     // Trả về accessToken
