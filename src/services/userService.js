@@ -125,16 +125,32 @@ const login = async (resBody, device) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      // 20 // 5 giây
-      env.ACCESS_TOKEN_LIFE
+      20
+      // env.ACCESS_TOKEN_LIFE
     )
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
       env.REFRESH_TOKEN_SECRET,
-      // 15
-      env.REFRESH_TOKEN_LIFE
+      60
+      // env.REFRESH_TOKEN_LIFE
     )
-    const userSession = await userSessionModel.getSessionByUserId(existingUser._id, device)
+
+    // Tạo hoặc lấy session
+    let userSession = await userSessionModel.getSessionByUserId(existingUser._id, device)
+    let sessionId
+
+    if (!userSession) {
+      const newSession = await userSessionModel.createNew({
+        userId: existingUser._id.toString(),
+        device_id: device,
+        is_2fa_verified: false
+      })
+      sessionId = newSession.sessionId
+      userSession = { is_2fa_verified: false }
+    } else {
+      sessionId = userSession.sessionId
+    }
+
     const resUser = pickUser(existingUser)
     resUser['is_2fa_verified'] = userSession?.is_2fa_verified
     // resUser['last_login'] = userSession.last_login || null
@@ -142,6 +158,7 @@ const login = async (resBody, device) => {
     return {
       accessToken,
       refreshToken,
+      sessionId,
       ...pickUser(resUser)
     }
 
@@ -150,7 +167,7 @@ const login = async (resBody, device) => {
   }
 }
 
-const loginGoogle = async (resBody) => {
+const loginGoogle = async (resBody, device) => {
   try {
     //
     const existingUser = await userModel.findOneByEmail(resBody.email)
@@ -163,22 +180,39 @@ const loginGoogle = async (resBody) => {
       const accessToken = await JwtProvider.generateToken(
         userInfo,
         env.ACCESS_TOKEN_SECRET,
-        // 20
-        env.ACCESS_TOKEN_LIFE
+        20
+        // env.ACCESS_TOKEN_LIFE
       )
       const refreshToken = await JwtProvider.generateToken(
         userInfo,
         env.REFRESH_TOKEN_SECRET,
-        env.REFRESH_TOKEN_LIFE
+        60
+        // env.REFRESH_TOKEN_LIFE
       )
+
+      // Tạo hoặc lấy session
+      let userSession = await userSessionModel.getSessionByUserId(existingUser._id, device)
+      let sessionId
+
+      if (!userSession) {
+        const newSession = await userSessionModel.createNew({
+          userId: existingUser._id.toString(),
+          device_id: device,
+          is_2fa_verified: false
+        })
+        sessionId = newSession.sessionId
+      } else {
+        sessionId = userSession.sessionId
+      }
 
       return {
         accessToken,
         refreshToken,
+        sessionId,
         ...pickUser(existingUser)
       }
     }
-    // Tạo data lưu vào database
+    // Tạo data lưu vào database nếu chưa có user
     const dataNewUser = {
       email: resBody.email,
       username: resBody.name || resBody.email.split('@')[0],
@@ -207,9 +241,17 @@ const loginGoogle = async (resBody) => {
       env.REFRESH_TOKEN_LIFE
     )
 
+    // Tạo session cho user mới
+    const newSession = await userSessionModel.createNew({
+      userId: result._id.toString(),
+      device_id: device,
+      is_2fa_verified: false
+    })
+
     return {
       accessToken,
       refreshToken,
+      sessionId: newSession.sessionId,
       ...pickUser(result)
     }
 
@@ -232,8 +274,8 @@ const refreshToken = async (clientRefreshToken) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET,
-      // 5 // 5 giây
-      env.ACCESS_TOKEN_LIFE
+      20 // 5 giây
+      // env.ACCESS_TOKEN_LIFE
     )
 
     // Trả về accessToken
@@ -345,7 +387,14 @@ const setup2FA = async (userId, reqBody, device) => {
     }
     // Cập nhật trạng thái 2fa của user
     const updatedUser = await userModel.update(userId, { require_2fa: true })
-    userSessionModel.createNew({ userId: userId, device_id: device, is_2fa_verified: true })
+    // Nếu đã có session (tạo ở login) thì chỉ update, không tạo mới
+    const existingSession = await userSessionModel.getSessionByUserId(userId, device)
+    if (existingSession) {
+      await userSessionModel.updateByUserDevice(userId, device, { is_2fa_verified: true })
+    } else {
+      // Nếu không có session, tạo mới (fallback)
+      await userSessionModel.createNew({ userId: userId, device_id: device, is_2fa_verified: true })
+    }
     return {
       ...pickUser(updatedUser),
       is_2fa_verified: true
@@ -376,8 +425,10 @@ const verify2FA = async (userId, reqBody, device) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid OTP token!')
     }
     const userSession = await userSessionModel.getSessionByUserId(user._id, device)
-    // Cập nhật trạng thái 2fa của user
-    if (!userSession) {
+    // Cập nhật trạng thái 2fa của user: nếu đã có session thì update, không tạo session thừa
+    if (userSession) {
+      await userSessionModel.updateByUserDevice(userId, device, { is_2fa_verified: true })
+    } else {
       await userSessionModel.createNew({ userId: userId, device_id: device, is_2fa_verified: true })
     }
     return {

@@ -28,9 +28,9 @@ const verifyAccount = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const result = await userService.login(req.body)
+    const device = req.headers['user-agent'] || 'Unknown device'
+    const result = await userService.login(req.body, device)
 
-    //
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
@@ -44,6 +44,17 @@ const login = async (req, res, next) => {
       sameSite: 'none',
       maxAge: ms('14 days')
     })
+
+    // Lưu sessionId vào cookie để có thể logout dù token expired
+    if (result.sessionId) {
+      res.cookie('sessionId', result.sessionId, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: ms('14 days')
+      })
+    }
+
     res.status(StatusCodes.OK).json(result)
 
   }
@@ -63,18 +74,27 @@ const loginGoogle = async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: ms('14 days')
+      maxAge: ms('60s')
     })
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: ms('14 days')
+      maxAge: ms('60s')
     })
+
+    // Lưu sessionId vào cookie để có thể logout dù token expired
+    if (result.sessionId) {
+      res.cookie('sessionId', result.sessionId, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: ms('60s')
+      })
+    }
+
     res.status(StatusCodes.OK).json(result)
-    // F24GQttruQbBeJnbNbHwI9NgHnQe7rhN
-    // E0R_mzPajFHGwmiy9l3vSF46yaCMwdNr-CQY53zUKqcZ0HtcdFL-cxQe3b1Zv304
 
   }
   catch (error) {
@@ -84,11 +104,30 @@ const loginGoogle = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const device = req.headers['user-agent'] || 'Unknown device'
-    const userId = req.jwtDecoded._id
-    await userSessionModel.deleteSessionByDeviceId(userId, device)
+    const sessionId = req.cookies?.sessionId
+    // // Nếu không có userId từ accessToken (do token expired), thử lấy từ refreshToken
+    // if (!userId) {
+    //   const refreshToken = req.cookies?.refreshToken
+    //   if (refreshToken) {
+    //     try {
+    //       const payload = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET)
+    //       userId = payload._id || payload.id || payload.userId
+    //     } catch (err) {
+    //       // refreshToken cũng invalid/expired
+    //     }
+    //   }
+    // }
+
+    // ƯU TIÊN xóa theo sessionId (vì nó hoạt động cả khi token expired)
+    if (sessionId) {
+      await userSessionModel.deleteById(sessionId).catch(() => {})
+      // Nếu cái này cũng hết hạn thì db đã tự xóa rồi nhờ TTL index
+    }
+
+    // Luôn clear cookies để logout client
     res.clearCookie('accessToken')
     res.clearCookie('refreshToken')
+    res.clearCookie('sessionId')
     res.status(StatusCodes.OK).json({ message: 'Logged out successfully' })
   }
   catch (error) {

@@ -13,13 +13,20 @@ const mongoClient = new MongoClient(env.MONGODB_URI, {
 })
 
 export const DB_CONNECT = async () => {
-    await mongoClient.connect();
+    await mongoClient.connect()
     dbInstance = mongoClient.db(env.DATABASE_NAME)
+    // Tạo TTL index cho userSessions (xóa khi expiresAt <= now)
+    try {
+      await dbInstance.collection('userSessions')
+        .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
+    } catch (err) {
+      throw new Error('Failed to create TTL index for userSessions.expiresAt')
+    }
 }
 
 export const DB_GET = () => {
     if (!dbInstance) {
-        throw new Error('Database must be connected berfore using');
+        throw new Error('Database must be connected berfore using')
     } else return dbInstance
 }
 
