@@ -19,7 +19,7 @@ Router.route('/login_google')
   .post(userController.loginGoogle)
 
 Router.route('/logout')
-  .delete(authMiddleware.isAuthorized, userController.logout)
+  .delete(userController.logout)
 
 Router.route('/refresh_token')
   .get(userController.refreshToken)
