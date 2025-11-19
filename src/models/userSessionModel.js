@@ -22,7 +22,7 @@ const createNew = async (data) => {
     // Tự động generate sessionId nếu không có
     const sessionId = data.sessionId || uuidv4()
     // Mặc định session hết hạn sau 14 ngày (hoặc lấy từ env)
-    const expiresAt = data.expiresAt || new Date(Date.now() + 60 * 1000)
+    const expiresAt = data.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
 
     const validData = await validBeforeCreate({
       ...data,
