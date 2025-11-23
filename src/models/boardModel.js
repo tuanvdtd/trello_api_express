@@ -7,6 +7,7 @@ import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
 import { userModel } from './userModel'
 import { pagingSkipValue } from '~/utils/algorithms'
+import { commentModel } from './commentModel'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -85,6 +86,17 @@ const getDetails = async (userId, boardId) => {
         localField: '_id',
         foreignField: 'boardId',
         as: 'cards'
+      } },
+      { $lookup: {
+        from: commentModel.COMMENT_COLLECTION_NAME,
+        localField: '_id',
+        foreignField: 'boardId',
+        as: 'comments',
+        pipeline: [
+          { $project: {
+            boardId: 0,
+            _destroy: 0 } }
+        ]
       } },
       { $lookup: {
         from: userModel.USER_COLLECTION_NAME,

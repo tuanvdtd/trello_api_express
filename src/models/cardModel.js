@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { EMAIL_RULE_MESSAGE, EMAIL_RULE, OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { DB_GET } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
@@ -17,15 +17,18 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
+  commentOrderIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
 
-  comments: Joi.array().items({
-    userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-    userEmail: Joi.string().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
-    userAvatar: Joi.string(),
-    userDisplayName: Joi.string(),
-    content: Joi.string(),
-    commentedAt:Joi.date().timestamp()
-  }).default([]),
+  // comments: Joi.array().items({
+  //   userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+  //   userEmail: Joi.string().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
+  //   userAvatar: Joi.string(),
+  //   userDisplayName: Joi.string(),
+  //   content: Joi.string(),
+  //   commentedAt:Joi.date().timestamp()
+  // }).default([]),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -93,18 +96,6 @@ const deleteCardsByColumnId = async (columnId) => {
   }
 }
 
-const addCommentToFirst = async (cardId, commentData) => {
-  try {
-    const updateResult = await DB_GET().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(cardId) },
-      { $push: { comments:  { $each: [commentData], $position: 0 } } },
-      { returnDocument: 'after' }
-    )
-    return updateResult
-  } catch (error) {
-    throw new Error(error)
-  }
-}
 
 const updateCardMembers = async (cardId, updateMemberCardData) => {
   let actionUpdateMemberCard = {}
@@ -126,6 +117,34 @@ const updateCardMembers = async (cardId, updateMemberCardData) => {
   }
 }
 
+// Thêm columnId vào mảng commentOrderIds của card
+const pushCommentIds = async (comment) => {
+  try {
+    const updateResult = await DB_GET().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(comment.cardId) },
+      { $push: { commentOrderIds: { $each: [new ObjectId(comment._id)], $position: 0 } } },
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+// Xóa commentId khỏi mảng commentOrderIds của bảng card
+const pullCommentIds = async (comment) => {
+  try {
+    const updateResult = await DB_GET().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(comment.cardId) },
+      { $pull: { commentOrderIds: new ObjectId(comment._id) } },
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -133,6 +152,7 @@ export const cardModel = {
   getCardById,
   update,
   deleteCardsByColumnId,
-  addCommentToFirst,
+  pushCommentIds,
+  pullCommentIds,
   updateCardMembers
 }

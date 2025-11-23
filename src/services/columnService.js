@@ -1,6 +1,7 @@
 import { columnModel } from '~/models/columnModel'
 import { BoardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
+import { commentModel } from '~/models/commentModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 
@@ -42,10 +43,12 @@ const deleteColumn = async (columnId) => {
     if (!targetColumn) {
       throw new ApiError(StatusCodes.NOT_FOUND, `Column with id ${columnId} not found`)
     }
-    // Xóa column khỏi bảng DB columns
-    await columnModel.deleteOneById(columnId)
+    // Xóa comments trong tất cả cards của column khỏi bảng DB comments
+    await commentModel.deleteManyByColumnId(columnId)
     // Xóa card khỏi bảng DB cards
     await cardModel.deleteCardsByColumnId(columnId)
+    // Xóa column khỏi bảng DB columns
+    await columnModel.deleteOneById(columnId)
     // Xóa columnId khỏi columnOrderIds khỏi bảng DB boards
     await BoardModel.pullColumnIds(targetColumn)
     return { message: 'Column deleted successfully' }
