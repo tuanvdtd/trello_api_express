@@ -28,7 +28,11 @@ const update = async (cardId, resBody, cardCoverFile) => {
     let updatedData = { }
     if (cardCoverFile) {
       // upload lên cloundinary
-      const cardCover = await cloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
+      const cardCover = await cloudinaryProvider.streamUploadWithOverwrite(
+        cardCoverFile.buffer,
+        'card-covers',
+        `card_${cardId}_cover`
+      )
       // Lưu lại url avatar vào database
       updatedData = await cardModel.update(cardId, { cover: cardCover.secure_url })
     // } else if (updateData.newComment) {

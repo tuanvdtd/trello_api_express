@@ -19,6 +19,8 @@ export const DB_CONNECT = async () => {
     try {
       await dbInstance.collection('userSessions')
         .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
+      await dbInstance.collection('users')
+        .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
     } catch (err) {
       throw new Error('Failed to create TTL index for userSessions.expiresAt')
     }

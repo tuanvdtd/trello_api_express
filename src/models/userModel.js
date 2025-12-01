@@ -66,6 +66,8 @@ const createNew = async (data) => {
     // Chọn schema phù hợp
     if (data.authProvider === 'local') {
       validData = await validBeforeCreate(data)
+      // Tự động set isActive = false cho tài khoản mới
+      validData.expiresAt = new Date(Date.now() + 60*1000) // 1 minutes
     } else {
       validData = await SOCIAL_USER_SCHEMA.validateAsync(data, { abortEarly: false })
     }
@@ -114,6 +116,27 @@ const update = async (userId, updateData) => {
   }
 }
 
+const updateUserActive = async (userId, updateData) => {
+  try {
+    Object.keys(updateData).forEach((key) => {
+      if (UNCHANGE_FIELDS.includes(key)) {
+        delete updateData[key]
+      }
+    })
+    const updateResult = await DB_GET().collection(USER_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(userId) },
+      {
+        $set: updateData,
+        $unset: { expiresAt: '' } // Xóa trường expiresAt sau khi kích hoạt để TTL không xóa user
+      },
+      { returnDocument: 'after' }
+    )
+    return updateResult
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 
 export const userModel = {
   USER_COLLECTION_NAME,
@@ -121,5 +144,6 @@ export const userModel = {
   createNew,
   findOneById,
   findOneByEmail,
-  update
+  update,
+  updateUserActive
 }

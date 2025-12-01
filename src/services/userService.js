@@ -320,9 +320,13 @@ const update = async (userId, userAvatarFile, updateData) => {
 
     } else if (userAvatarFile) {
       // upload lên cloundinary
-      const userAvatar = await cloudinaryProvider.streamUpload(userAvatarFile.buffer, 'avatars')
+      const userAvatar = await cloudinaryProvider.streamUploadAvatarWithOverwrite(
+        userAvatarFile.buffer,
+        'avatars'
+        , `user_${userId}_avatar`
+      )
       // Lưu lại url avatar vào database
-      updatedUser = await userModel.update(userId, { avatar: userAvatar.secure_url })
+      updatedUser = await userModel.update(userId, { avatar: userAvatar.avatar_url })
     } else {
       // update các thông tin khác
       updatedUser = await userModel.update(userId, updateData)

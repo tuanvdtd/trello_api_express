@@ -87,7 +87,11 @@ const update = async (boardId, resBody, backgroundFile) => {
   try {
     let result = {}
     if (backgroundFile) {
-      const backgroundCover = await cloudinaryProvider.streamUpload(backgroundFile.buffer, 'background-covers')
+      const backgroundCover = await cloudinaryProvider.streamUploadWithOverwrite(
+        backgroundFile.buffer,
+        'background-covers',
+        `board_${boardId}_background`
+      )
       // Lưu lại url avatar vào database
       const background = {
         backgroundType: 'image',

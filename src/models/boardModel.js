@@ -194,46 +194,55 @@ const getBoards = async (userId, page, itemsPerPage, querySearchBoard) => {
       })
     }
 
+    // Tạo pipeline cho queryBoards
+    const queryBoardsPipeline = []
+    // Chỉ thêm skip và limit nếu không có querySearchBoard
+    if (!querySearchBoard) {
+      queryBoardsPipeline.push(
+        { $skip: pagingSkipValue(page, itemsPerPage) },
+        { $limit: itemsPerPage }
+      )
+    }
+    // Thêm các lookup operations
+    queryBoardsPipeline.push(
+      // Lookup owners (chỉ lấy displayName và avatar)
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'ownerIds',
+        foreignField: '_id',
+        as: 'owners',
+        pipeline: [
+          { $project: { displayName: 1, avatar: 1 } }
+        ]
+      } },
+
+      // Lookup members (chỉ lấy displayName và avatar)
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'memberIds',
+        foreignField: '_id',
+        as: 'members',
+        pipeline: [
+          { $project: { displayName: 1, avatar: 1 } }
+        ]
+      } },
+
+      // Merge owners into members
+      { $addFields: {
+        members: { $setUnion: ['$owners', '$members'] }
+      } },
+
+      // Remove owners
+      { $project: { owners: 0 } }
+    )
+
     const query = await DB_GET().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: { $and: queryConditions } },
       { $sort: { title : 1 } },
       // Xử lí nhiều luồng
       { $facet: {
         // 1 query boards
-        'queryBoards': [
-          { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
-          { $limit: itemsPerPage }, // giới hạn tối đa số lượng bản ghi trả về trên 1 page
-
-          // Lookup owners (chỉ lấy displayName và avatar)
-          { $lookup: {
-            from: userModel.USER_COLLECTION_NAME,
-            localField: 'ownerIds',
-            foreignField: '_id',
-            as: 'owners',
-            pipeline: [
-              { $project: { displayName: 1, avatar: 1 } }
-            ]
-          } },
-
-          // Lookup members (chỉ lấy displayName và avatar)
-          { $lookup: {
-            from: userModel.USER_COLLECTION_NAME,
-            localField: 'memberIds',
-            foreignField: '_id',
-            as: 'members',
-            pipeline: [
-              { $project: { displayName: 1, avatar: 1 } }
-            ]
-          } },
-
-          // Merge owners into members and deduplicate
-          { $addFields: {
-            members: { $setUnion: ['$owners', '$members'] }
-          } },
-
-          // Remove owners array (we merged it)
-          { $project: { owners: 0 } }
-        ],
+        'queryBoards': queryBoardsPipeline,
         // 2 query total count
         'queryCountTotalBoards': [
           { $count: 'totalBoards' }

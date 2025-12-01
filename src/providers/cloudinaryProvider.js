@@ -42,12 +42,46 @@ const streamUploadWithOverwrite = (fileBuffer, folderName, publicId) => {
     const stream = cloudinaryv2.uploader.upload_stream({
       folder: folderName,
       public_id: publicId,
+      resource_type: 'auto',
       overwrite: true, // Ghi đè nếu đã tồn tại
       invalidate: true // Clear cache CDN
     },
     (error, result) => {
       if (result) {
         resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+    streamifier.createReadStream(fileBuffer).pipe(stream)
+  })
+}
+
+const streamUploadAvatarWithOverwrite = (fileBuffer, folderName, publicId) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinaryv2.uploader.upload_stream({
+      folder: folderName,
+      public_id: publicId,
+      resource_type: 'auto',
+      overwrite: true, // Ghi đè nếu đã tồn tại
+      invalidate: true // Clear cache CDN
+    },
+    (error, result) => {
+      if (result) {
+        resolve({
+          // url: result.url,
+          secure_url: result.secure_url,
+          // public_id: result.public_id,
+          avatar_url: cloudinaryv2.url(result.public_id, {
+            version: result.version,
+            width: 100,
+            height: 100,
+            crop: 'fill', // Giữ đúng tỷ lệ và cắt cho vừa khung (thumbnail đều nhau, không méo).
+            gravity: 'auto', // Tự động lấy phần trung tâm của ảnh
+            fetch_format: 'auto' // Tự động chọn định dạng ảnh tối ưu
+            // format: 'jpg' // Chuyển đổi sang định dạng jpg
+          })
+        })
       } else {
         reject(error)
       }
@@ -70,7 +104,8 @@ const destroy = async (publicId) => {
 export const cloudinaryProvider = {
   streamUpload,
   streamUploadWithOverwrite,
-  destroy
+  destroy,
+  streamUploadAvatarWithOverwrite
 }
 
 // const uploadResponse = await cloudinary.uploader.upload(profilePic, {
