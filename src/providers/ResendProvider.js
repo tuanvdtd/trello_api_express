@@ -9,7 +9,7 @@ const sendEmail = async ({ to, subject, html }) => {
   try {
     const data = await resendInstance.emails.send({
       from: 'Acme <onboarding@resend.dev>',
-      to,
+      to, // email nguoi nhan phải đc xác thực trên Resend
       subject,
       html
     })

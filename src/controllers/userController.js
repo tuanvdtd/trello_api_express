@@ -159,7 +159,7 @@ const update = async (req, res, next) => {
     // Biến jwtDecoded chứa thông tin người dùng đã xác thực sau khi đi qua authMiddleware.isAuthorized
     const userId = req.jwtDecoded._id
     const userAvatarFile = req.file
-    console.log('userAvatarFile:', userAvatarFile)
+    // console.log('userAvatarFile:', userAvatarFile)
     const updatedUser = await userService.update(userId, userAvatarFile, req.body)
     res.status(StatusCodes.OK).json(updatedUser)
   }
